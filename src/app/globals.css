@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-cairo), sans-serif;
+  --font-heading: var(--font-tajawal), sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* خلفية متحركة */
+@keyframes bg-pan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-cairo), sans-serif;
+  background: linear-gradient(-45deg, #0b1120, #1a1f35, #0b1120, #162238);
+  background-size: 400% 400%;
+  animation: bg-pan 15s ease infinite;
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-tajawal), sans-serif;
+}
+
+/* تأثير الزجاج */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(14, 165, 233, 0.3);
+  transform: translateY(-2px);
 }
