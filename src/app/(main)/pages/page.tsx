@@ -84,14 +84,12 @@ export default function PagesPage() {
 
   return (
     <div 
-      className="min-h-screen relative overflow-hidden flex flex-col font-sans"
+      className="min-h-screen relative flex flex-col font-sans bg-cover bg-center md:bg-fixed"
       style={{
         backgroundImage: "url('/stadium-bg.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed"
       }}
     >
+      {/* الطبقة السوداء الشفافة اللي بتغطي الصورة عشان النص يبان */}
       <div className="absolute inset-0 bg-slate-950/60 z-0" />
 
       {/* هيدر متجاوب */}
