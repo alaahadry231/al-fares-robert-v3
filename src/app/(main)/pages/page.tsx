@@ -84,16 +84,22 @@ export default function PagesPage() {
 
   return (
     <div 
-      className="min-h-screen relative flex flex-col font-sans bg-cover bg-center md:bg-fixed"
-      style={{
-        backgroundImage: "url('/stadium-bg.jpg')",
-      }}
+      className="min-h-screen relative flex flex-col font-sans bg-slate-950"
     >
-      {/* الطبقة السوداء الشفافة اللي بتغطي الصورة عشان النص يبان */}
-      <div className="absolute inset-0 bg-slate-950/60 z-0" />
+      {/* 👇 خلفية ثابتة خفيفة بدون بلور عشان الأداء */}
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: "url('/stadium-bg.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/70 md:bg-slate-950/60" />
+      </div>
 
       {/* هيدر متجاوب */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-slate-950/60 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-slate-950/80 backdrop-blur-sm">
         <div className="container mx-auto px-3 md:px-4 h-16 md:h-20 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-10 h-10 md:w-14 md:h-14 relative shrink-0">
@@ -143,7 +149,7 @@ export default function PagesPage() {
               className={`px-4 md:px-8 py-2 md:py-3 rounded-full font-bold text-sm md:text-base transition-all duration-300 ${
                 activeTab === tab.key
                   ? `bg-gradient-to-r ${tab.color} text-white shadow-[0_0_20px_rgba(14,165,233,0.3)] scale-[1.02] md:scale-105`
-                  : "bg-slate-900/50 text-slate-300 border border-white/10 hover:bg-slate-800/80 hover:text-white"
+                  : "bg-slate-900/70 text-slate-300 border border-white/10 hover:bg-slate-800/90 hover:text-white"
               }`}
             >
               {tab.label} ({tab.count})
@@ -156,7 +162,7 @@ export default function PagesPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-slate-900/50 rounded-3xl border border-white/10 backdrop-blur-md">
+          <div className="text-center py-20 bg-slate-900/70 rounded-3xl border border-white/10">
             <Trophy size={48} className="text-slate-600 mx-auto mb-4 md:w-16 md:h-16" />
             <p className="text-slate-400 text-base md:text-lg">لا توجد بكجات تطابق بحثك</p>
           </div>
@@ -170,7 +176,7 @@ export default function PagesPage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className={`relative rounded-2xl md:rounded-3xl overflow-hidden border ${config.cardBorder} bg-slate-950/80 backdrop-blur-md group transition-all duration-300 hover:scale-[1.02]`}
+                  className={`relative rounded-2xl md:rounded-3xl overflow-hidden border ${config.cardBorder} bg-slate-900/80 md:bg-slate-950/80 md:backdrop-blur-md group transition-all duration-300 hover:scale-[1.02]`}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${config.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   
@@ -193,13 +199,13 @@ export default function PagesPage() {
                           {page.description || "لا يوجد وصف"}
                         </p>
                       </div>
-                      <div className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold border flex items-center gap-1 shrink-0 backdrop-blur-md ${config.classes}`}>
+                      <div className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold border flex items-center gap-1 shrink-0 ${config.classes}`}>
                         {config.icon}
                         {config.label}
                       </div>
                     </div>
 
-                    <div className="bg-black/50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-white/10 mb-4 md:mb-8 backdrop-blur-md">
+                    <div className="bg-black/60 md:bg-black/50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-white/10 mb-4 md:mb-8">
                       <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 text-right">الكود</div>
                       <div className="flex items-center justify-between">
                         <button 
