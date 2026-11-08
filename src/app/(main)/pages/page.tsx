@@ -19,7 +19,8 @@ export default function PagesPage() {
   const [pages, setPages] = useState<SportsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "won" | "lost" | "pending">("all");
+  // 👇 خلينا التبويب الافتراضي هو "قيد الانتظار"
+  const [activeTab, setActiveTab] = useState<"won" | "lost" | "pending">("pending");
 
   useEffect(() => {
     const fetchPages = async () => {
@@ -73,10 +74,10 @@ export default function PagesPage() {
     };
   };
 
-  const filtered = pages.filter((p) => activeTab === "all" || p.status === activeTab);
+  // 👇 فلترة البكجات حسب التبويب النشط
+  const filtered = pages.filter((p) => p.status === activeTab);
 
   const counts = {
-    all: pages.length,
     won: pages.filter(p => p.status === "won").length,
     lost: pages.filter(p => p.status === "lost").length,
     pending: pages.filter(p => p.status === "pending").length,
@@ -86,7 +87,7 @@ export default function PagesPage() {
     <div 
       className="min-h-screen relative flex flex-col font-sans bg-slate-950"
     >
-      {/* 👇 خلفية ثابتة خفيفة بدون بلور عشان الأداء */}
+      {/* الخلفية */}
       <div 
         className="fixed inset-0 z-0"
         style={{
@@ -135,18 +136,17 @@ export default function PagesPage() {
           </p>
         </motion.div>
 
-        {/* التبويبات متجاوبة */}
-        <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-12">
+        {/* 👇 التبويبات (3 أعمدة على الموبايل) */}
+        <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap justify-center md:gap-3 mb-8 md:mb-12">
           {[
-            { key: "all", label: "الكل", count: counts.all, color: "from-sky-500 to-blue-600" },
+            { key: "pending", label: "قيد الانتظار", count: counts.pending, color: "from-amber-400 to-yellow-500" },
             { key: "won", label: "رابح", count: counts.won, color: "from-emerald-500 to-teal-600" },
             { key: "lost", label: "خاسر", count: counts.lost, color: "from-red-500 to-rose-600" },
-            { key: "pending", label: "قيد الاستخدام", count: counts.pending, color: "from-amber-400 to-yellow-500" },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-4 md:px-8 py-2 md:py-3 rounded-full font-bold text-sm md:text-base transition-all duration-300 ${
+              className={`px-2 md:px-8 py-2 md:py-3 rounded-full font-bold text-xs md:text-base transition-all duration-300 ${
                 activeTab === tab.key
                   ? `bg-gradient-to-r ${tab.color} text-white shadow-[0_0_20px_rgba(14,165,233,0.3)] scale-[1.02] md:scale-105`
                   : "bg-slate-900/70 text-slate-300 border border-white/10 hover:bg-slate-800/90 hover:text-white"
@@ -164,7 +164,7 @@ export default function PagesPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 bg-slate-900/70 rounded-3xl border border-white/10">
             <Trophy size={48} className="text-slate-600 mx-auto mb-4 md:w-16 md:h-16" />
-            <p className="text-slate-400 text-base md:text-lg">لا توجد بكجات تطابق بحثك</p>
+            <p className="text-slate-400 text-base md:text-lg">لا توجد بكجات في هذا القسم حالياً</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
