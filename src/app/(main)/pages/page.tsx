@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Copy, Check, CheckCircle, Clock, XCircle, Trophy } from "lucide-react";
+import { trackVisit, trackCopy } from "@/lib/tracking";
 
 type SportsPage = {
   id: number;
@@ -19,10 +20,12 @@ export default function PagesPage() {
   const [pages, setPages] = useState<SportsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<number | null>(null);
-  // 👇 خلينا التبويب الافتراضي هو "قيد الانتظار"
   const [activeTab, setActiveTab] = useState<"won" | "lost" | "pending">("pending");
 
   useEffect(() => {
+    // 👇 تسجيل زيارة
+    trackVisit();
+
     const fetchPages = async () => {
       try {
         const res = await fetch("/api/pages");
@@ -39,6 +42,7 @@ export default function PagesPage() {
 
   const handleCopy = (code: string, id: number) => {
     navigator.clipboard.writeText(code);
+    trackCopy(id); // 👇 تسجيل نسخ الكود
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -74,7 +78,6 @@ export default function PagesPage() {
     };
   };
 
-  // 👇 فلترة البكجات حسب التبويب النشط
   const filtered = pages.filter((p) => p.status === activeTab);
 
   const counts = {
@@ -87,7 +90,6 @@ export default function PagesPage() {
     <div 
       className="min-h-screen relative flex flex-col font-sans bg-slate-950"
     >
-      {/* الخلفية */}
       <div 
         className="fixed inset-0 z-0"
         style={{
@@ -99,7 +101,6 @@ export default function PagesPage() {
         <div className="absolute inset-0 bg-slate-950/70 md:bg-slate-950/60" />
       </div>
 
-      {/* هيدر متجاوب */}
       <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-slate-950/80 backdrop-blur-sm">
         <div className="container mx-auto px-3 md:px-4 h-16 md:h-20 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
@@ -136,7 +137,6 @@ export default function PagesPage() {
           </p>
         </motion.div>
 
-        {/* 👇 التبويبات (3 أعمدة على الموبايل) */}
         <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap justify-center md:gap-3 mb-8 md:mb-12">
           {[
             { key: "pending", label: "قيد الانتظار", count: counts.pending, color: "from-amber-400 to-yellow-500" },
