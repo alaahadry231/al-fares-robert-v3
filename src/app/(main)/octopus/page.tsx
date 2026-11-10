@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, TrendingUp, Target } from "lucide-react";
+import { Sparkles, TrendingUp, Target, Calendar, Clock } from "lucide-react";
 
 type Prediction = {
   team1_ar: string;
   team2_ar: string;
+  match_date: string;
+  match_time: string;
   analysis: string;
   win1: number;
   draw: number;
@@ -123,6 +125,22 @@ export default function OctopusPage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
+              {/* 👇 عرض تاريخ ووقت المباراة */}
+              {prediction.match_date && prediction.match_time && (
+                <div className="glass-card rounded-3xl p-4 flex items-center justify-between border-r-4 border-sky-500">
+                  <div className="text-sm text-slate-300 flex items-center gap-2">
+                    <Calendar size={18} className="text-sky-400" />
+                    <span>موعد المباراة المتوقع:</span>
+                  </div>
+                  <div className="text-white font-bold flex items-center gap-2">
+                    <span dir="ltr">{prediction.match_date}</span>
+                    <span className="text-slate-500">|</span>
+                    <Clock size={16} className="text-sky-400" />
+                    <span dir="ltr">{prediction.match_time}</span>
+                  </div>
+                </div>
+              )}
+
               {/* نص التحليل */}
               {prediction.analysis && (
                 <div className="glass-card rounded-3xl p-6 border-l-4 border-sky-500">
