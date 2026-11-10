@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const { object } = await generateObject({
       // نستخدم الراوتر التلقائي للموديلات المجانية
-      model: openrouter("nvidia/nemotron-3-super-120b-a12b:free", {
+      model: openrouter("deepseek/deepseek-chat-v3.1:free", {
         plugins: [{ id: "response-healing" }],
       }),
       schema: predictionSchema,
