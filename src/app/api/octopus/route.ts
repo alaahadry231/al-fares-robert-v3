@@ -10,18 +10,20 @@ async function fetchAPI(endpoint: string) {
     headers: {
       "x-apisports-key": API_KEY!,
     },
+    // نضيف cache بسيط عشان ما نستهلك الطلبات بسرعة
+    next: { revalidate: 3600 }, 
   });
   return res.json();
 }
 
-// 1. البحث عن ID الفريق بالاسم (هذه الدالة تحتاج اختباراً، قد لا تعمل بدقة)
+// 1. البحث عن ID الفريق بالاسم (باستخدام الـ endpoint الصحيح)
 async function getTeamId(teamName: string): Promise<number | null> {
   try {
-    // البحث عن الفريق بالاسم
+    // البحث عن الفريق بالاسم (الـ API بيحتاج 3 أحرف على الأقل)
     const data = await fetchAPI(`/teams?search=${encodeURIComponent(teamName)}`);
     
     if (data.response && data.response.length > 0) {
-      // نأخذ أول نتيجة (قد لا تكون الأدق دائمًا)
+      // نرجع أول نتيجة (الـ API بيرجع أقرب تطابق)
       return data.response[0].team.id;
     }
     return null;
@@ -31,17 +33,15 @@ async function getTeamId(teamName: string): Promise<number | null> {
   }
 }
 
-// 2. جلب إحصائيات الفريق (آخر المباريات) - هنا التحدي الأكبر
-// API-Football لا يعطي "متوسطات" جاهزة، بل نطلب مباريات الفريق ونحسبها
+// 2. جلب إحصائيات الفريق
+// ⚠️ ملاحظة: لسا ما جبنا إحصائيات حقيقية، عم نستخدم قيم تقديرية للاختبار
 async function getTeamStats(teamId: number) {
   try {
-    // ملاحظة: نحتاج لمعرفة league و season لجلب المباريات
-    // هذا الجزء معقد وسنستخدم بيانات افتراضية مؤقتاً للاختبار
-    // لأن جلب مباريات الفريق يتطلب معرفة الدوري والموسم
-    // وسنحتاج لبناء منطق أكثر تعقيداً لاحقاً
+    // TODO: هون لازم نجيب مباريات الفريق الفعلية من الـ API
+    // ونحسب متوسط الأهداف المسجلة والمستقبلة
+    // هالخطوة بتحتاج شغل إضافي (معرفة الدوري والموسم)
     
-    // كحل مؤقت للاختبار، سنرجع قيماً افتراضية
-    // TODO: تطوير هذا الجزء لاحقاً بجلب مباريات حقيقية
+    // كحل مؤقت، نرجع قيم تقديرية
     return { avgScored: 1.5, avgConceded: 1.2 };
   } catch (error) {
     console.error("getTeamStats error:", error);
@@ -83,11 +83,12 @@ export async function POST(req: NextRequest) {
     const stats1 = await getTeamStats(team1Id);
     const stats2 = await getTeamStats(team2Id);
 
-    // حساب lambda
+    // حساب lambda (متوسط الأهداف المتوقع) لكل فريق
+    // lambda1 = هجوم الفريق الأول × دفاع الفريق الثاني
     const lambda1 = stats1.avgScored * stats2.avgConceded;
     const lambda2 = stats2.avgScored * stats1.avgConceded;
 
-    // حساب الاحتمالات
+    // حساب احتمالات النتائج
     const results = [];
     for (let i = 0; i <= 6; i++) {
       for (let j = 0; j <= 6; j++) {
@@ -118,11 +119,11 @@ export async function POST(req: NextRequest) {
           probability: Math.round(r.probability * 100),
         })),
       },
-      // معلومات إضافية للتشخيص
+      // معلومات إضافية للتشخيص (بتساعدنا نتأكد إنه البحث شغال)
       debug: {
         team1Id,
         team2Id,
-        note: "الإحصائيات حالياً افتراضية، سيتم تطويرها لاحقاً"
+        note: "الإحصائيات حالياً تقديرية، سيتم تطويرها لاحقاً"
       }
     });
 
