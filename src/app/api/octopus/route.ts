@@ -38,10 +38,14 @@ export async function POST(req: NextRequest) {
 
     // 👇 نستخدم نموذج Llama 3.1 70B المجاني والمستقر
     const { object } = await generateObject({
-      model: openrouter("meta-llama/llama-3.1-70b-instruct"),
-      schema: predictionSchema,
-      prompt: prompt,
-    });
+  // 👇 نضيف plugins عشان نصلح الـ JSON تلقائياً
+  model: openrouter("meta-llama/llama-3.1-70b-instruct", {
+    plugins: [{ id: "response-healing" }],
+  }),
+  schema: predictionSchema,
+  prompt: prompt,
+  maxOutputTokens: 2000, // 👈 نرفع الحد عشان نضمن إنه الـ JSON ما ينقطع
+});
 
     return NextResponse.json({
       team1,
