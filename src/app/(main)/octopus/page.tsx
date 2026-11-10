@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Target } from "lucide-react";
 
 type Prediction = {
-  analysis: string; // 👈 ضفنا هاد السطر عشان نعرض نص التحليل
+  analysis: string;
   win1: number;
   draw: number;
   win2: number;
@@ -121,7 +121,7 @@ export default function OctopusPage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              {/* 👇 عرض نص التحليل من الذكاء الاصطناعي */}
+              {/* نص التحليل */}
               {prediction.analysis && (
                 <div className="glass-card rounded-3xl p-6 border-l-4 border-sky-500">
                   <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
@@ -155,14 +155,15 @@ export default function OctopusPage() {
                 </div>
               </div>
 
-              {/* الأهداف المتوقعة */}
+              {/* عدد الأهداف المتوقع */}
               <div className="glass-card rounded-3xl p-6 text-center">
                 <h2 className="text-lg font-bold mb-2 flex items-center justify-center gap-2">
                   <Target size={18} className="text-yellow-400" />
                   عدد الأهداف المتوقع
                 </h2>
                 <div className="text-5xl font-bold text-yellow-400">
-                  {prediction.expected_goals}
+                  {/* 👇 تقريب الرقم لصحيح (2.6 تصير 3) */}
+                  {Math.ceil(parseFloat(prediction.expected_goals))}
                 </div>
                 <p className="text-slate-400 text-sm mt-2">هدف</p>
               </div>
@@ -171,25 +172,43 @@ export default function OctopusPage() {
               <div className="glass-card rounded-3xl p-6">
                 <h2 className="text-lg font-bold mb-4">أكثر النتائج ترجيحاً</h2>
                 <div className="space-y-2">
-                  {prediction.top_scores.map((score, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center justify-between p-3 rounded-xl ${
-                        i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-slate-950/50 border border-white/5"
-                      }`}
-                    >
-                      <span className="font-mono font-bold text-white text-lg">{score.score}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-slate-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-sky-500 rounded-full"
-                            style={{ width: `${score.probability * 3}%` }}
-                          ></div>
+                  {prediction.top_scores.map((score, i) => {
+                    // 👇 نقسم النتيجة "1-2" لرقمين عشان نعرض أسماء الفرق
+                    const [s1, s2] = score.score.split("-").map(s => s.trim());
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-center justify-between p-3 rounded-xl ${
+                          i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-slate-950/50 border border-white/5"
+                        }`}
+                      >
+                        {/* اسم الفريق الأول ونتيجته */}
+                        <div className="flex items-center gap-2 font-bold text-white text-sm md:text-base">
+                          <span>{team1}</span>
+                          <span className="text-sky-400 text-lg px-1">{s1}</span>
                         </div>
-                        <span className="text-sky-400 font-bold text-sm w-10 text-left">{score.probability}%</span>
+                        
+                        <span className="text-slate-500 text-xs">-</span>
+                        
+                        {/* اسم الفريق الثاني ونتيجته */}
+                        <div className="flex items-center gap-2 font-bold text-white text-sm md:text-base">
+                          <span className="text-sky-400 text-lg px-1">{s2}</span>
+                          <span>{team2}</span>
+                        </div>
+
+                        {/* النسبة المئوية */}
+                        <div className="flex items-center gap-2 mr-4">
+                          <div className="w-16 md:w-24 h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-sky-500 rounded-full"
+                              style={{ width: `${score.probability * 3}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sky-400 font-bold text-sm w-8 text-left">{score.probability}%</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
