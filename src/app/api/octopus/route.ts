@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     `;
 
     const { object } = await generateObject({
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq("openai/gpt-oss-120b"),
       schema: predictionSchema,
       prompt: prompt,
       maxOutputTokens: 2000,
