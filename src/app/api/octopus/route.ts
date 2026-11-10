@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const { object } = await generateObject({
       // نستخدم الراوتر التلقائي للموديلات المجانية
-      model: openrouter("meta-llama/llama-3.3-70b-instruct:free", {
+      model: openrouter("google/gemma-4-31b-it:free", {
         plugins: [{ id: "response-healing" }],
       }),
       schema: predictionSchema,
