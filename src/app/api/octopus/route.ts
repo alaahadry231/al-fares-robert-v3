@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createDeepSeek } from "@ai-sdk/deepseek";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY!,
+// 👇 تهيئة DeepSeek (متوافق مع OpenAI)
+const deepseek = createDeepSeek({
+  apiKey: process.env.DEEPSEEK_API_KEY!,
 });
 
-// 👇 تحديد شكل الـ JSON المطلوب بدقة
+// 👇 تحديد شكل الـ JSON المطلوب بدقة (نفسه اللي كان مع OpenRouter)
 const predictionSchema = z.object({
   analysis: z.string().describe("نص التحليل باللغة العربية الفصحى حصراً (جملتين إلى ثلاث جمل)"),
   win1: z.number().min(0).max(100).describe("احتمالية فوز الفريق الأول (رقم فقط)"),
@@ -30,7 +31,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "اسم الفريقين مطلوبين" }, { status: 400 });
     }
 
-    // 👇 برومبت صارم جداً لإجبار الموديل على اللغة العربية وتنسيق الأرقام
     const prompt = `
       أنت خبير تحليل مباريات كرة قدم عربي. حلل المباراة بين ${team1} و ${team2}.
       
@@ -43,10 +43,8 @@ export async function POST(req: NextRequest) {
     `;
 
     const { object } = await generateObject({
-      // نستخدم الراوتر التلقائي للموديلات المجانية
-      model: openrouter("deepseek/deepseek-chat-v3.1:free", {
-        plugins: [{ id: "response-healing" }],
-      }),
+      // 👇 نستخدم DeepSeek Flash (الأسرع والأرخص، ومناسب جداً لهالمهمة)
+      model: deepseek("deepseek-flash"),
       schema: predictionSchema,
       prompt: prompt,
       maxOutputTokens: 2000,
@@ -59,7 +57,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error("OpenRouter Octopus error:", error);
+    console.error("DeepSeek Octopus error:", error);
     
     return NextResponse.json({ 
       error: "تعذر تحليل المباراة حالياً. حاول مرة أخرى.",
