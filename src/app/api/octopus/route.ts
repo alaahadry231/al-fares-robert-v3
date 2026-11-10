@@ -14,15 +14,12 @@ async function fetchAPI(endpoint: string) {
   return res.json();
 }
 
-// 👇 دالة البحث الذكية (بتحاول تدور بالاسم، وبعدين تفلتر النتائج)
+// 1. البحث عن ID الفريق بالاسم
 async function getTeamId(teamName: string): Promise<number | null> {
   try {
-    // 1. البحث بالاسم
     const data = await fetchAPI(`/teams?search=${encodeURIComponent(teamName)}`);
     
     if (data.response && data.response.length > 0) {
-      // الـ API بيرجع كذا نتيجة (مثلاً "Real Madrid" و "Real Madrid Castilla")
-      // بنحاول نلاقي التطابق الأقرب للاسم اللي كتبه المستخدم
       const searchLower = teamName.toLowerCase();
       
       // نبحث عن تطابق شبه كامل
@@ -30,11 +27,9 @@ async function getTeamId(teamName: string): Promise<number | null> {
         item.team.name.toLowerCase() === searchLower
       );
       
-      if (exactMatch) {
-        return exactMatch.team.id;
-      }
+      if (exactMatch) return exactMatch.team.id;
 
-      // إذا ما لقينا تطابق كامل، نرجع أول نتيجة (غالباً بتكون الأقرب)
+      // إذا ما لقينا تطابق كامل، نرجع أول نتيجة
       return data.response[0].team.id;
     }
     return null;
@@ -44,16 +39,50 @@ async function getTeamId(teamName: string): Promise<number | null> {
   }
 }
 
-// جلب إحصائيات الفريق (لسا تقديرية، رح نطورها بعدين)
+// 2. جلب إحصائيات الفريق الحقيقية
 async function getTeamStats(teamId: number) {
   try {
-    return { avgScored: 1.5, avgConceded: 1.2 };
+    // نجيب آخر 20 مباراة للفريق في الموسم (2024)
+    // ملاحظة: ممكن نغير الموسم حسب الحاجة (2023، 2025)
+    const data = await fetchAPI(`/fixtures?team=${teamId}&season=2024&last=20`);
+    
+    if (!data.response || data.response.length === 0) {
+      return { avgScored: 1.5, avgConceded: 1.2, matches: 0 };
+    }
+    
+    let totalScored = 0;
+    let totalConceded = 0;
+    let count = 0;
+    
+    for (const fixture of data.response) {
+      // نتأكد إنه المباراة خلصت (FT = Full Time)
+      if (fixture.fixture.status.short !== 'FT') continue;
+      
+      const isHome = fixture.teams.home.id === teamId;
+      const goalsFor = isHome ? (fixture.goals.home || 0) : (fixture.goals.away || 0);
+      const goalsAgainst = isHome ? (fixture.goals.away || 0) : (fixture.goals.home || 0);
+      
+      totalScored += goalsFor;
+      totalConceded += goalsAgainst;
+      count++;
+    }
+    
+    if (count === 0) {
+      return { avgScored: 1.5, avgConceded: 1.2, matches: 0 };
+    }
+    
+    return {
+      avgScored: totalScored / count,
+      avgConceded: totalConceded / count,
+      matches: count,
+    };
   } catch (error) {
-    return { avgScored: 1.5, avgConceded: 1.2 };
+    console.error("getTeamStats error:", error);
+    return { avgScored: 1.5, avgConceded: 1.2, matches: 0 };
   }
 }
 
-// دالة بواسون
+// 3. دالة بواسون
 function poisson(k: number, lambda: number): number {
   return Math.exp(-lambda) * Math.pow(lambda, k) / factorial(k);
 }
@@ -73,6 +102,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "اسم الفريقين مطلوبين" }, { status: 400 });
     }
 
+    // البحث عن الفريقين
     const team1Id = await getTeamId(team1);
     const team2Id = await getTeamId(team2);
 
@@ -82,12 +112,15 @@ export async function POST(req: NextRequest) {
       }, { status: 404 });
     }
 
+    // جلب الإحصائيات الحقيقية
     const stats1 = await getTeamStats(team1Id);
     const stats2 = await getTeamStats(team2Id);
 
+    // حساب lambda (متوسط الأهداف المتوقع) لكل فريق
     const lambda1 = stats1.avgScored * stats2.avgConceded;
     const lambda2 = stats2.avgScored * stats1.avgConceded;
 
+    // حساب احتمالات النتائج
     const results = [];
     for (let i = 0; i <= 6; i++) {
       for (let j = 0; j <= 6; j++) {
@@ -121,6 +154,10 @@ export async function POST(req: NextRequest) {
       debug: {
         team1Id,
         team2Id,
+        team1Matches: stats1.matches,
+        team2Matches: stats2.matches,
+        team1AvgScored: stats1.avgScored.toFixed(2),
+        team2AvgScored: stats2.avgScored.toFixed(2),
       }
     });
 
