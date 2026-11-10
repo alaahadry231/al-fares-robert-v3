@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Target } from "lucide-react";
 
 type Prediction = {
+  analysis: string; // 👈 ضفنا هاد السطر عشان نعرض نص التحليل
   win1: number;
   draw: number;
   win2: number;
@@ -61,7 +62,7 @@ export default function OctopusPage() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-sm font-bold mb-4">
             <Sparkles size={16} />
-            مدعوم بالذكاء الإحصائي
+            مدعوم بالذكاء الاصطناعي
           </div>
           <h1 className="text-4xl md:text-6xl font-bold font-heading mb-4 text-white">
             🐙 أخطبوط <span className="text-sky-400">التوقعات</span>
@@ -120,6 +121,18 @@ export default function OctopusPage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
+              {/* 👇 عرض نص التحليل من الذكاء الاصطناعي */}
+              {prediction.analysis && (
+                <div className="glass-card rounded-3xl p-6 border-l-4 border-sky-500">
+                  <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
+                    <span className="text-sky-400">🤖</span> تحليل الأخطبوط
+                  </h2>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    {prediction.analysis}
+                  </p>
+                </div>
+              )}
+
               {/* احتمالات الفوز */}
               <div className="glass-card rounded-3xl p-6">
                 <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
