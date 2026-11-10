@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     // 👇 نستخدم نموذج Llama 3.1 70B المجاني والمستقر
 const { object } = await generateObject({
   // 👇 موديل مجاني يدعم structured output بشكل أصلي
-  model: openrouter("liquid/lfm-2.5-2.6b:free", {
+  model: openrouter("mistralai/mistral-small-3.2-24b-instruct:free", {
     plugins: [{ id: "response-healing" }],
   }),
   schema: predictionSchema,
