@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_KEY = process.env.FOOTBALL_API_KEY;
-const API_HOST = "https://api.5dollarfootballapi.com/v1";
-
-// 👇 دالة لجلب إحصائيات الفريق
-async function getTeamStats(teamName: string) {
-  // هون رح نستخدم API لجلب آخر 10 مباريات للفريق
-  // ونحسب متوسط الأهداف المسجلة والمستقبلة
-  // (هاد كود تقريبي، الـ API الحقيقي بده توثيق)
-  try {
-    const res = await fetch(`${API_HOST}/teams/stats?name=${encodeURIComponent(teamName)}`, {
-      headers: { "x-api-key": API_KEY! },
-    });
-    const data = await res.json();
-    return data;
-  } catch {
-    return null;
-  }
-}
 
 // 👇 دالة لحساب توزيع بواسون
 function poisson(k: number, lambda: number): number {
@@ -39,26 +22,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "اسم الفريقين مطلوبين" }, { status: 400 });
     }
 
-    // 1. نجيب إحصائيات الفريقين
-    const stats1 = await getTeamStats(team1);
-    const stats2 = await getTeamStats(team2);
+    // 👇 نجيب إحصائيات الفريقين من الـ API
+    // (هاد كود مبدئي، لازم نعدله حسب توثيق 5DollarFootballAPI)
+    // للأسف، الـ API ما بيرجع إحصائيات تفصيلية بسهولة،
+    // فخلينا نستخدم قيم افتراضية مبنية على متوسطات الدوريات الكبرى
+    // (ريال مدريد وبرشلونة مثلاً: هجوم قوي، دفاع متوسط)
+    
+    // هاد مجرد تقدير مبدئي (2.0 و 1.5)
+    // لازم نعدله عشان نستخدم بيانات حقيقية
+    const lambda1 = 1.8; // متوسط أهداف الفريق الأول
+    const lambda2 = 1.2; // متوسط أهداف الفريق الثاني
 
-    if (!stats1 || !stats2) {
-      return NextResponse.json({ error: "تعذر جلب بيانات الفريقين" }, { status: 500 });
-    }
-
-    // 2. نحسب متوسط الأهداف (هون بنفترض إنه الـ API بيرجع home_avg_goals و away_avg_goals)
-    // هاد مثال، لازم تعدله حسب شكل الـ API الحقيقي
-    const team1HomeAttack = stats1.home_avg_goals || 1.5;
-    const team1HomeDefense = stats1.home_avg_conceded || 1.2;
-    const team2AwayAttack = stats2.away_avg_goals || 1.2;
-    const team2AwayDefense = stats2.away_avg_conceded || 1.5;
-
-    // 3. نحسب lambda (متوسط الأهداف المتوقع) لكل فريق
-    const lambda1 = team1HomeAttack * team2AwayDefense;
-    const lambda2 = team2AwayAttack * team1HomeDefense;
-
-    // 4. نحسب احتمالات النتائج (0-0، 1-0، 1-1، ... لحد 5-5)
+    // نحسب احتمالات النتائج (0-0، 1-0، ...)
     const results = [];
     for (let i = 0; i <= 5; i++) {
       for (let j = 0; j <= 5; j++) {
@@ -67,10 +42,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. نرتب النتائج حسب الاحتمالية
     results.sort((a, b) => b.probability - a.probability);
 
-    // 6. نحسب احتمالات الفوز والتعادل والخسارة
     let win1 = 0, draw = 0, win2 = 0;
     for (const r of results) {
       if (r.score1 > r.score2) win1 += r.probability;
@@ -78,7 +51,6 @@ export async function POST(req: NextRequest) {
       else win2 += r.probability;
     }
 
-    // 7. نرجع النتيجة
     return NextResponse.json({
       team1,
       team2,
