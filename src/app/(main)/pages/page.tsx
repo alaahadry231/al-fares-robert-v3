@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Copy, Check, CheckCircle, Clock, XCircle, Trophy } from "lucide-react";
+import Link from "next/link"; // 👈 ضفنا هاد عشان زر الأخطبوط
 import { trackVisit, trackCopy } from "@/lib/tracking";
 
 type SportsPage = {
@@ -115,9 +116,19 @@ export default function PagesPage() {
               Al Fares <span className="text-sky-400">Robert</span>
             </span>
           </div>
-          <div className="hidden md:flex items-center gap-2 text-sm text-sky-400 font-bold bg-sky-500/10 px-4 py-2 rounded-full border border-sky-500/20">
-            <span>منصة البكجات الرياضية</span>
-            <CheckCircle size={16} />
+          
+          {/* 👇 هون ضفنا زر الأخطبوط */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/octopus"
+              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-sky-400 font-bold text-sm md:text-base transition"
+            >
+              🐙 الأخطبوط
+            </Link>
+            <div className="hidden md:flex items-center gap-2 text-sm text-sky-400 font-bold bg-sky-500/10 px-4 py-2 rounded-full border border-sky-500/20">
+              <span>منصة البكجات الرياضية</span>
+              <CheckCircle size={16} />
+            </div>
           </div>
         </div>
       </header>
