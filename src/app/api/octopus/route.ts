@@ -1,29 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// 👇 المفتاح الجديد من API-Football
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_BASE = "https://v3.football.api-sports.io";
 
-// دالة مساعدة لإرسال الطلبات مع الهيدرز الصحيحة
+// دالة مساعدة لإرسال الطلبات
 async function fetchAPI(endpoint: string) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     headers: {
       "x-apisports-key": API_KEY!,
     },
-    // نضيف cache بسيط عشان ما نستهلك الطلبات بسرعة
     next: { revalidate: 3600 }, 
   });
   return res.json();
 }
 
-// 1. البحث عن ID الفريق بالاسم (باستخدام الـ endpoint الصحيح)
+// 👇 دالة البحث الذكية (بتحاول تدور بالاسم، وبعدين تفلتر النتائج)
 async function getTeamId(teamName: string): Promise<number | null> {
   try {
-    // البحث عن الفريق بالاسم (الـ API بيحتاج 3 أحرف على الأقل)
+    // 1. البحث بالاسم
     const data = await fetchAPI(`/teams?search=${encodeURIComponent(teamName)}`);
     
     if (data.response && data.response.length > 0) {
-      // نرجع أول نتيجة (الـ API بيرجع أقرب تطابق)
+      // الـ API بيرجع كذا نتيجة (مثلاً "Real Madrid" و "Real Madrid Castilla")
+      // بنحاول نلاقي التطابق الأقرب للاسم اللي كتبه المستخدم
+      const searchLower = teamName.toLowerCase();
+      
+      // نبحث عن تطابق شبه كامل
+      const exactMatch = data.response.find((item: any) => 
+        item.team.name.toLowerCase() === searchLower
+      );
+      
+      if (exactMatch) {
+        return exactMatch.team.id;
+      }
+
+      // إذا ما لقينا تطابق كامل، نرجع أول نتيجة (غالباً بتكون الأقرب)
       return data.response[0].team.id;
     }
     return null;
@@ -33,23 +44,16 @@ async function getTeamId(teamName: string): Promise<number | null> {
   }
 }
 
-// 2. جلب إحصائيات الفريق
-// ⚠️ ملاحظة: لسا ما جبنا إحصائيات حقيقية، عم نستخدم قيم تقديرية للاختبار
+// جلب إحصائيات الفريق (لسا تقديرية، رح نطورها بعدين)
 async function getTeamStats(teamId: number) {
   try {
-    // TODO: هون لازم نجيب مباريات الفريق الفعلية من الـ API
-    // ونحسب متوسط الأهداف المسجلة والمستقبلة
-    // هالخطوة بتحتاج شغل إضافي (معرفة الدوري والموسم)
-    
-    // كحل مؤقت، نرجع قيم تقديرية
     return { avgScored: 1.5, avgConceded: 1.2 };
   } catch (error) {
-    console.error("getTeamStats error:", error);
     return { avgScored: 1.5, avgConceded: 1.2 };
   }
 }
 
-// 3. دالة بواسون لحساب الاحتمالات
+// دالة بواسون
 function poisson(k: number, lambda: number): number {
   return Math.exp(-lambda) * Math.pow(lambda, k) / factorial(k);
 }
@@ -69,26 +73,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "اسم الفريقين مطلوبين" }, { status: 400 });
     }
 
-    // البحث عن الفريقين
     const team1Id = await getTeamId(team1);
     const team2Id = await getTeamId(team2);
 
     if (!team1Id || !team2Id) {
       return NextResponse.json({ 
-        error: "تعذر العثور على أحد الفريقين. جرب الاسم بالإنجليزي (مثلاً: Real Madrid)" 
+        error: `تعذر العثور على أحد الفريقين. تأكد من كتابة الاسم بالإنجليزي.` 
       }, { status: 404 });
     }
 
-    // جلب الإحصائيات (حالياً قيم افتراضية للاختبار)
     const stats1 = await getTeamStats(team1Id);
     const stats2 = await getTeamStats(team2Id);
 
-    // حساب lambda (متوسط الأهداف المتوقع) لكل فريق
-    // lambda1 = هجوم الفريق الأول × دفاع الفريق الثاني
     const lambda1 = stats1.avgScored * stats2.avgConceded;
     const lambda2 = stats2.avgScored * stats1.avgConceded;
 
-    // حساب احتمالات النتائج
     const results = [];
     for (let i = 0; i <= 6; i++) {
       for (let j = 0; j <= 6; j++) {
@@ -119,11 +118,9 @@ export async function POST(req: NextRequest) {
           probability: Math.round(r.probability * 100),
         })),
       },
-      // معلومات إضافية للتشخيص (بتساعدنا نتأكد إنه البحث شغال)
       debug: {
         team1Id,
         team2Id,
-        note: "الإحصائيات حالياً تقديرية، سيتم تطويرها لاحقاً"
       }
     });
 
