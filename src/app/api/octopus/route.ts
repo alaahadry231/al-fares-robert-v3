@@ -9,15 +9,15 @@ const openrouter = createOpenRouter({
 
 // 👇 تحديد شكل الـ JSON المطلوب بدقة
 const predictionSchema = z.object({
-  analysis: z.string().describe("نص التحليل (جملتين إلى ثلاث جمل)"),
-  win1: z.number().min(0).max(100).describe("احتمالية فوز الفريق الأول"),
-  draw: z.number().min(0).max(100).describe("احتمالية التعادل"),
-  win2: z.number().min(0).max(100).describe("احتمالية فوز الفريق الثاني"),
-  expected_goals: z.string().describe("عدد الأهداف المتوقع (مثلاً 2.5)"),
+  analysis: z.string().describe("نص التحليل باللغة العربية الفصحى حصراً (جملتين إلى ثلاث جمل)"),
+  win1: z.number().min(0).max(100).describe("احتمالية فوز الفريق الأول (رقم فقط)"),
+  draw: z.number().min(0).max(100).describe("احتمالية التعادل (رقم فقط)"),
+  win2: z.number().min(0).max(100).describe("احتمالية فوز الفريق الثاني (رقم فقط)"),
+  expected_goals: z.coerce.string().describe("عدد الأهداف المتوقع كرقم فقط (مثلاً 2.5) بدون أي كلام إضافي"),
   top_scores: z.array(
     z.object({
       score: z.string().describe("النتيجة (مثلاً 1-0)"),
-      probability: z.number().min(0).max(100).describe("احتمالية هالنتيجة"),
+      probability: z.number().min(0).max(100).describe("احتمالية هالنتيجة (رقم فقط)"),
     })
   ).length(3).describe("أكثر 3 نتائج ترجيحاً"),
 });
@@ -30,22 +30,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "اسم الفريقين مطلوبين" }, { status: 400 });
     }
 
+    // 👇 برومبت صارم جداً لإجبار الموديل على اللغة العربية وتنسيق الأرقام
     const prompt = `
-      أنت خبير تحليل مباريات كرة قدم. حلل المباراة بين ${team1} و ${team2}.
-      أعطني توقعك بناءً على معلوماتك العامة عن الفريقين (مستواهم، تاريخهم، وأدائهم الأخير إن أمكن).
-      تأكد أن مجموع (win1 + draw + win2) يساوي 100 تقريباً.
+      أنت خبير تحليل مباريات كرة قدم عربي. حلل المباراة بين ${team1} و ${team2}.
+      
+      قواعد صارمة جداً يجب اتباعها حرفياً:
+      1. حقل "analysis" (نص التحليل): يجب أن يكون مكتوباً باللغة العربية الفصحى حصراً. لا تكتب أي كلمة بالإنجليزية.
+      2. حقل "expected_goals" (عدد الأهداف المتوقع): يجب أن يكون رقماً فقط (مثلاً "2.5" أو "3.1"). ممنوع منعاً باتاً وضع أي نص أو كلام في هذا الحقل.
+      3. حقل "top_scores" (أكثر النتائج ترجيحاً): يجب أن يحتوي فقط على النتيجة (مثلاً "1-0") والاحتمالية (رقم). لا تضع أي كلام إضافي أو أسباب هنا.
+      4. تأكد أن مجموع (win1 + draw + win2) يساوي 100 تقريباً.
+      5. أرجع النتيجة بصيغة JSON فقط.
     `;
 
-    // 👇 نستخدم نموذج Llama 3.1 70B المجاني والمستقر
-const { object } = await generateObject({
-  // 👇 موديل مجاني يدعم structured output بشكل أصلي
-  model: openrouter("openrouter/free", {
-    plugins: [{ id: "response-healing" }],
-  }),
-  schema: predictionSchema,
-  prompt: prompt,
-  maxOutputTokens: 2000,
-});
+    const { object } = await generateObject({
+      // نستخدم الراوتر التلقائي للموديلات المجانية
+      model: openrouter("openrouter/free", {
+        plugins: [{ id: "response-healing" }],
+      }),
+      schema: predictionSchema,
+      prompt: prompt,
+      maxOutputTokens: 2000,
+    });
 
     return NextResponse.json({
       team1,
