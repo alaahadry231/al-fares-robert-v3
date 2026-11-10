@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Target } from "lucide-react";
 
 type Prediction = {
+  team1_ar: string;
+  team2_ar: string;
   analysis: string;
   win1: number;
   draw: number;
@@ -81,7 +83,7 @@ export default function OctopusPage() {
                   type="text"
                   value={team1}
                   onChange={(e) => setTeam1(e.target.value)}
-                  placeholder="ريال مدريد"
+                  placeholder="France"
                   className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 focus:border-sky-500 focus:outline-none text-white transition"
                   required
                 />
@@ -92,7 +94,7 @@ export default function OctopusPage() {
                   type="text"
                   value={team2}
                   onChange={(e) => setTeam2(e.target.value)}
-                  placeholder="برشلونة"
+                  placeholder="Italy"
                   className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 focus:border-sky-500 focus:outline-none text-white transition"
                   required
                 />
@@ -141,7 +143,7 @@ export default function OctopusPage() {
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                    <span className="text-white font-bold">{team1}</span>
+                    <span className="text-white font-bold">{prediction.team1_ar}</span>
                     <span className="text-emerald-400 font-bold text-xl">{prediction.win1}%</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-slate-500/10 rounded-xl border border-slate-500/20">
@@ -149,7 +151,7 @@ export default function OctopusPage() {
                     <span className="text-slate-300 font-bold text-xl">{prediction.draw}%</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-xl border border-red-500/20">
-                    <span className="text-white font-bold">{team2}</span>
+                    <span className="text-white font-bold">{prediction.team2_ar}</span>
                     <span className="text-red-400 font-bold text-xl">{prediction.win2}%</span>
                   </div>
                 </div>
@@ -162,7 +164,6 @@ export default function OctopusPage() {
                   عدد الأهداف المتوقع
                 </h2>
                 <div className="text-5xl font-bold text-yellow-400">
-                  {/* 👇 تقريب الرقم لصحيح (2.6 تصير 3) */}
                   {Math.ceil(parseFloat(prediction.expected_goals))}
                 </div>
                 <p className="text-slate-400 text-sm mt-2">هدف</p>
@@ -173,7 +174,6 @@ export default function OctopusPage() {
                 <h2 className="text-lg font-bold mb-4">أكثر النتائج ترجيحاً</h2>
                 <div className="space-y-2">
                   {prediction.top_scores.map((score, i) => {
-                    // 👇 نقسم النتيجة "1-2" لرقمين عشان نعرض أسماء الفرق
                     const [s1, s2] = score.score.split("-").map(s => s.trim());
                     return (
                       <div
@@ -182,21 +182,18 @@ export default function OctopusPage() {
                           i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-slate-950/50 border border-white/5"
                         }`}
                       >
-                        {/* اسم الفريق الأول ونتيجته */}
                         <div className="flex items-center gap-2 font-bold text-white text-sm md:text-base">
-                          <span>{team1}</span>
+                          <span>{prediction.team1_ar}</span>
                           <span className="text-sky-400 text-lg px-1">{s1}</span>
                         </div>
                         
                         <span className="text-slate-500 text-xs">-</span>
                         
-                        {/* اسم الفريق الثاني ونتيجته */}
                         <div className="flex items-center gap-2 font-bold text-white text-sm md:text-base">
                           <span className="text-sky-400 text-lg px-1">{s2}</span>
-                          <span>{team2}</span>
+                          <span>{prediction.team2_ar}</span>
                         </div>
 
-                        {/* النسبة المئوية */}
                         <div className="flex items-center gap-2 mr-4">
                           <div className="w-16 md:w-24 h-2 bg-slate-800 rounded-full overflow-hidden">
                             <div
