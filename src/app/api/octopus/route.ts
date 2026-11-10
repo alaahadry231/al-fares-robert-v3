@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createDeepSeek } from "@ai-sdk/deepseek";
+import { createGroq } from "@ai-sdk/groq";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-// 👇 تهيئة DeepSeek (متوافق مع OpenAI)
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY!,
+// 👇 تهيئة Groq
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY!,
 });
 
-// 👇 تحديد شكل الـ JSON المطلوب بدقة (نفسه اللي كان مع OpenRouter)
+// 👇 تحديد شكل الـ JSON المطلوب بدقة
 const predictionSchema = z.object({
   analysis: z.string().describe("نص التحليل باللغة العربية الفصحى حصراً (جملتين إلى ثلاث جمل)"),
   win1: z.number().min(0).max(100).describe("احتمالية فوز الفريق الأول (رقم فقط)"),
@@ -43,8 +43,7 @@ export async function POST(req: NextRequest) {
     `;
 
     const { object } = await generateObject({
-      // 👇 نستخدم DeepSeek Flash (الأسرع والأرخص، ومناسب جداً لهالمهمة)
-      model: deepseek("deepseek-flash"),
+      model: groq("llama-3.3-70b-versatile"),
       schema: predictionSchema,
       prompt: prompt,
       maxOutputTokens: 2000,
@@ -57,7 +56,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error("DeepSeek Octopus error:", error);
+    console.error("Groq Octopus error:", error);
     
     return NextResponse.json({ 
       error: "تعذر تحليل المباراة حالياً. حاول مرة أخرى.",
