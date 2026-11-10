@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, TrendingUp, Target, Calendar, Clock } from "lucide-react";
+import { Sparkles, TrendingUp, Target, Calendar, Clock, ChevronDown } from "lucide-react";
 
 type Prediction = {
   team1_ar: string;
@@ -17,12 +17,51 @@ type Prediction = {
   top_scores: { score: string; probability: number }[];
 };
 
+type Match = {
+  id: number;
+  home_team: string;
+  away_team: string;
+  league: string;
+  kickoff: string;
+};
+
 export default function OctopusPage() {
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [error, setError] = useState("");
+
+  // 👇 حالة مباريات اليوم
+  const [todayMatches, setTodayMatches] = useState<Match[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(true);
+  const [selectedMatchId, setSelectedMatchId] = useState<string>("");
+
+  // 👇 نجيب مباريات اليوم أول ما تفتح الصفحة
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const res = await fetch("/api/matches");
+        const data = await res.json();
+        setTodayMatches(data.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingMatches(false);
+      }
+    };
+    fetchMatches();
+  }, []);
+
+  // 👇 لما يختار مباراة من القائمة، نعبي الحقول
+  const handleSelectMatch = (matchId: string) => {
+    setSelectedMatchId(matchId);
+    const match = todayMatches.find((m) => m.id.toString() === matchId);
+    if (match) {
+      setTeam1(match.home_team);
+      setTeam2(match.away_team);
+    }
+  };
 
   const handlePredict = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +91,18 @@ export default function OctopusPage() {
     }
   };
 
+  const formatKickoff = (iso: string) => {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleTimeString("ar-SY", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return iso;
+    }
+  };
+
   return (
     <div className="min-h-screen relative flex flex-col font-sans bg-slate-950">
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('/stadium-bg.jpg')" }}>
@@ -72,12 +123,41 @@ export default function OctopusPage() {
             🐙 أخطبوط <span className="text-sky-400">التوقعات</span>
           </h1>
           <p className="text-slate-300 text-sm md:text-lg max-w-2xl mx-auto">
-            أدخل اسم الفريقين، وسيقوم الأخطبوط بتحليل المباراة وتوقع النتيجة وعدد الأهداف
+            اختر مباراة من مباريات اليوم، أو اكتب أسماء الفرق يدوياً
           </p>
         </motion.div>
 
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handlePredict} className="glass-panel rounded-3xl p-6 md:p-8 mb-8">
+            
+            {/* 👇 قائمة مباريات اليوم */}
+            <div className="mb-6">
+              <label className="block text-sm text-slate-400 mb-2">
+                اختر مباراة من مباريات اليوم (اختياري)
+              </label>
+              {loadingMatches ? (
+                <div className="text-slate-500 text-sm">جاري تحميل المباريات...</div>
+              ) : todayMatches.length === 0 ? (
+                <div className="text-slate-500 text-sm">لا توجد مباريات اليوم</div>
+              ) : (
+                <div className="relative">
+                  <select
+                    value={selectedMatchId}
+                    onChange={(e) => handleSelectMatch(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-950/50 border border-white/10 focus:border-sky-500 focus:outline-none text-white transition appearance-none"
+                  >
+                    <option value="">-- اختر مباراة --</option>
+                    {todayMatches.map((match) => (
+                      <option key={match.id} value={match.id}>
+                        {match.home_team} vs {match.away_team} ({formatKickoff(match.kickoff)})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm text-slate-400 mb-2">الفريق الأول</label>
@@ -125,22 +205,6 @@ export default function OctopusPage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              {/* 👇 عرض تاريخ ووقت المباراة */}
-              {prediction.match_date && prediction.match_time && (
-                <div className="glass-card rounded-3xl p-4 flex items-center justify-between border-r-4 border-sky-500">
-                  <div className="text-sm text-slate-300 flex items-center gap-2">
-                    <Calendar size={18} className="text-sky-400" />
-                    <span>موعد المباراة المتوقع:</span>
-                  </div>
-                  <div className="text-white font-bold flex items-center gap-2">
-                    <span dir="ltr">{prediction.match_date}</span>
-                    <span className="text-slate-500">|</span>
-                    <Clock size={16} className="text-sky-400" />
-                    <span dir="ltr">{prediction.match_time}</span>
-                  </div>
-                </div>
-              )}
-
               {/* نص التحليل */}
               {prediction.analysis && (
                 <div className="glass-card rounded-3xl p-6 border-l-4 border-sky-500">
