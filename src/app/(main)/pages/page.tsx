@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Copy, Check, CheckCircle, Clock, XCircle, Trophy } from "lucide-react";
 import Link from "next/link";
 import { trackVisit, trackCopy } from "@/lib/tracking";
-import MaintenanceGuard from "@/components/MaintenanceGuard";
 
 type SportsPage = {
   id: number;
@@ -88,162 +87,160 @@ export default function PagesPage() {
   };
 
   return (
-    <MaintenanceGuard path="/pages">
-      <div className="min-h-screen relative flex flex-col font-sans bg-slate-950">
-        <div 
-          className="fixed inset-0 z-0"
-          style={{
-            backgroundImage: "url('/stadium-bg.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+    <div className="min-h-screen relative flex flex-col font-sans bg-slate-950">
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: "url('/stadium-bg.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/70 md:bg-slate-950/60" />
+      </div>
+
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-slate-950/80 backdrop-blur-sm">
+        <div className="container mx-auto px-3 md:px-4 h-16 md:h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-10 h-10 md:w-14 md:h-14 relative shrink-0">
+              <img 
+                src="/logo.png" 
+                alt="Al Fares Robert" 
+                className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]"
+              />
+            </div>
+            <span className="text-lg md:text-2xl font-bold font-heading text-white tracking-wide truncate">
+              Al Fares <span className="text-sky-400">Robert</span>
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Link
+              href="/octopus"
+              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-sky-400 font-bold text-sm md:text-base transition"
+            >
+              🐙 الأخطبوط
+            </Link>
+            <div className="hidden md:flex items-center gap-2 text-sm text-sky-400 font-bold bg-sky-500/10 px-4 py-2 rounded-full border border-sky-500/20">
+              <span>منصة البكجات الرياضية</span>
+              <CheckCircle size={16} />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 container mx-auto px-3 md:px-4 py-8 md:py-12 relative z-10">
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8 md:mb-16"
         >
-          <div className="absolute inset-0 bg-slate-950/70 md:bg-slate-950/60" />
+          <h1 className="text-3xl md:text-7xl font-bold font-heading mb-3 md:mb-4 text-white drop-shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
+            البكجات <span className="text-sky-400">الرياضية</span>
+          </h1>
+          <p className="text-slate-300 text-sm md:text-xl max-w-2xl mx-auto">
+            اختر البكج المناسب، واستمتع بمشاهدة رياضتك المفضلة
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap justify-center md:gap-3 mb-8 md:mb-12">
+          {[
+            { key: "pending", label: "قيد الانتظار", count: counts.pending, color: "from-amber-400 to-yellow-500" },
+            { key: "won", label: "رابح", count: counts.won, color: "from-emerald-500 to-teal-600" },
+            { key: "lost", label: "خاسر", count: counts.lost, color: "from-red-500 to-rose-600" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`px-2 md:px-8 py-2 md:py-3 rounded-full font-bold text-xs md:text-base transition-all duration-300 ${
+                activeTab === tab.key
+                  ? `bg-gradient-to-r ${tab.color} text-white shadow-[0_0_20px_rgba(14,165,233,0.3)] scale-[1.02] md:scale-105`
+                  : "bg-slate-900/70 text-slate-300 border border-white/10 hover:bg-slate-800/90 hover:text-white"
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          ))}
         </div>
 
-        <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-slate-950/80 backdrop-blur-sm">
-          <div className="container mx-auto px-3 md:px-4 h-16 md:h-20 flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-10 h-10 md:w-14 md:h-14 relative shrink-0">
-                <img 
-                  src="/logo.png" 
-                  alt="Al Fares Robert" 
-                  className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]"
-                />
-              </div>
-              <span className="text-lg md:text-2xl font-bold font-heading text-white tracking-wide truncate">
-                Al Fares <span className="text-sky-400">Robert</span>
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Link
-                href="/octopus"
-                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-sky-400 font-bold text-sm md:text-base transition"
-              >
-                🐙 الأخطبوط
-              </Link>
-              <div className="hidden md:flex items-center gap-2 text-sm text-sky-400 font-bold bg-sky-500/10 px-4 py-2 rounded-full border border-sky-500/20">
-                <span>منصة البكجات الرياضية</span>
-                <CheckCircle size={16} />
-              </div>
-            </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
           </div>
-        </header>
-
-        <main className="flex-1 container mx-auto px-3 md:px-4 py-8 md:py-12 relative z-10">
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8 md:mb-16"
-          >
-            <h1 className="text-3xl md:text-7xl font-bold font-heading mb-3 md:mb-4 text-white drop-shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
-              البكجات <span className="text-sky-400">الرياضية</span>
-            </h1>
-            <p className="text-slate-300 text-sm md:text-xl max-w-2xl mx-auto">
-              اختر البكج المناسب، واستمتع بمشاهدة رياضتك المفضلة
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap justify-center md:gap-3 mb-8 md:mb-12">
-            {[
-              { key: "pending", label: "قيد الانتظار", count: counts.pending, color: "from-amber-400 to-yellow-500" },
-              { key: "won", label: "رابح", count: counts.won, color: "from-emerald-500 to-teal-600" },
-              { key: "lost", label: "خاسر", count: counts.lost, color: "from-red-500 to-rose-600" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-2 md:px-8 py-2 md:py-3 rounded-full font-bold text-xs md:text-base transition-all duration-300 ${
-                  activeTab === tab.key
-                    ? `bg-gradient-to-r ${tab.color} text-white shadow-[0_0_20px_rgba(14,165,233,0.3)] scale-[1.02] md:scale-105`
-                    : "bg-slate-900/70 text-slate-300 border border-white/10 hover:bg-slate-800/90 hover:text-white"
-                }`}
-              >
-                {tab.label} ({tab.count})
-              </button>
-            ))}
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 bg-slate-900/70 rounded-3xl border border-white/10">
+            <Trophy size={48} className="text-slate-600 mx-auto mb-4 md:w-16 md:h-16" />
+            <p className="text-slate-400 text-base md:text-lg">لا توجد بكجات في هذا القسم حالياً</p>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+            {filtered.map((page, idx) => {
+              const config = getStatusConfig(page.status);
+              return (
+                <motion.div
+                  key={page.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className={`relative rounded-2xl md:rounded-3xl overflow-hidden border ${config.cardBorder} bg-slate-900/80 md:bg-slate-950/80 md:backdrop-blur-md group transition-all duration-300 hover:scale-[1.02]`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${config.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  
+                  <div 
+                    className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500 mix-blend-luminosity"
+                    style={{
+                      backgroundImage: `url('/logo.png')`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center"
+                    }}
+                  />
 
-          {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-20 bg-slate-900/70 rounded-3xl border border-white/10">
-              <Trophy size={48} className="text-slate-600 mx-auto mb-4 md:w-16 md:h-16" />
-              <p className="text-slate-400 text-base md:text-lg">لا توجد بكجات في هذا القسم حالياً</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-              {filtered.map((page, idx) => {
-                const config = getStatusConfig(page.status);
-                return (
-                  <motion.div
-                    key={page.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className={`relative rounded-2xl md:rounded-3xl overflow-hidden border ${config.cardBorder} bg-slate-900/80 md:bg-slate-950/80 md:backdrop-blur-md group transition-all duration-300 hover:scale-[1.02]`}
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${config.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                    
-                    <div 
-                      className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500 mix-blend-luminosity"
-                      style={{
-                        backgroundImage: `url('/logo.png')`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center"
-                      }}
-                    />
-
-                    <div className="relative p-4 md:p-8 z-10">
-                      <div className="flex items-start justify-between mb-3 md:mb-4 gap-2">
-                        <div className="flex-1">
-                          <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 text-white truncate md:whitespace-normal">
-                            {page.name}
-                          </h3>
-                          <p className="text-slate-300 text-xs md:text-sm line-clamp-2">
-                            {page.description || "لا يوجد وصف"}
-                          </p>
-                        </div>
-                        <div className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold border flex items-center gap-1 shrink-0 ${config.classes}`}>
-                          {config.icon}
-                          {config.label}
-                        </div>
+                  <div className="relative p-4 md:p-8 z-10">
+                    <div className="flex items-start justify-between mb-3 md:mb-4 gap-2">
+                      <div className="flex-1">
+                        <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 text-white truncate md:whitespace-normal">
+                          {page.name}
+                        </h3>
+                        <p className="text-slate-300 text-xs md:text-sm line-clamp-2">
+                          {page.description || "لا يوجد وصف"}
+                        </p>
                       </div>
-
-                      <div className="bg-black/60 md:bg-black/50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-white/10 mb-4 md:mb-8">
-                        <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 text-right">الكود</div>
-                        <div className="flex items-center justify-between">
-                          <button 
-                            onClick={() => handleCopy(page.code, page.id)}
-                            className="text-slate-400 hover:text-white transition-colors"
-                          >
-                            {copiedId === page.id ? <Check size={16} className="text-sky-400 md:w-5 md:h-5"/> : <Copy size={16} className="md:w-5 md:h-5" />}
-                          </button>
-                          <div className="font-mono text-lg md:text-2xl font-bold text-white tracking-widest" dir="ltr">
-                            {page.code}
-                          </div>
-                        </div>
+                      <div className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold border flex items-center gap-1 shrink-0 ${config.classes}`}>
+                        {config.icon}
+                        {config.label}
                       </div>
-
-                      <button
-                        onClick={() => handleCopy(page.code, page.id)}
-                        className={`w-full flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg transition-all duration-300 ${config.btnClass}`}
-                      >
-                        {copiedId === page.id ? <Check size={18} className="md:w-5 md:h-5" /> : <Copy size={18} className="md:w-5 md:h-5" />}
-                        {copiedId === page.id ? "تم النسخ بنجاح" : "نسخ الكود"}
-                      </button>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </main>
-      </div>
-    </MaintenanceGuard>
+
+                    <div className="bg-black/60 md:bg-black/50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-white/10 mb-4 md:mb-8">
+                      <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 text-right">الكود</div>
+                      <div className="flex items-center justify-between">
+                        <button 
+                          onClick={() => handleCopy(page.code, page.id)}
+                          className="text-slate-400 hover:text-white transition-colors"
+                        >
+                          {copiedId === page.id ? <Check size={16} className="text-sky-400 md:w-5 md:h-5"/> : <Copy size={16} className="md:w-5 md:h-5" />}
+                        </button>
+                        <div className="font-mono text-lg md:text-2xl font-bold text-white tracking-widest" dir="ltr">
+                          {page.code}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleCopy(page.code, page.id)}
+                      className={`w-full flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg transition-all duration-300 ${config.btnClass}`}
+                    >
+                      {copiedId === page.id ? <Check size={18} className="md:w-5 md:h-5" /> : <Copy size={18} className="md:w-5 md:h-5" />}
+                      {copiedId === page.id ? "تم النسخ بنجاح" : "نسخ الكود"}
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
