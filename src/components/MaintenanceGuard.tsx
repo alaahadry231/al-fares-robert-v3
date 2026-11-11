@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Wrench } from "lucide-react";
+import { Wrench, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function MaintenanceGuard({ 
   path, 
@@ -35,16 +36,33 @@ export default function MaintenanceGuard({
 
   if (isUnderMaintenance) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
-        <div className="glass-panel rounded-3xl p-8 md:p-12 max-w-md w-full text-center">
-          <div className="w-20 h-20 rounded-full bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center mx-auto mb-6">
-            <Wrench size={40} className="text-yellow-400" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+        {/* خلفية */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center opacity-20" 
+          style={{ backgroundImage: "url('/stadium-bg.jpg')" }}
+        />
+        
+        <div className="glass-panel rounded-3xl p-8 md:p-12 max-w-md w-full text-center relative z-10 shadow-2xl">
+          <div className="w-24 h-24 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+            <Wrench size={48} className="text-yellow-400" />
           </div>
-          <h1 className="text-3xl font-bold font-heading mb-3">قيد الصيانة</h1>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          
+          <h1 className="text-3xl font-bold font-heading mb-4 text-white">قيد الصيانة</h1>
+          
+          <p className="text-slate-300 text-sm leading-relaxed mb-8">
             نعمل حالياً على تحسين هذه الصفحة لتقديم تجربة أفضل لك. 
-            يرجى العودة لاحقاً.
+            يرجى العودة لاحقاً، أو تصفح البكجات المتاحة الآن.
           </p>
+
+          {/* 👇 زر العودة */}
+          <Link
+            href="/pages"
+            className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-lg transition-all shadow-[0_0_20px_-5px_rgba(14,165,233,0.5)]"
+          >
+            <ArrowRight size={20} />
+            العودة إلى البكجات
+          </Link>
         </div>
       </div>
     );
